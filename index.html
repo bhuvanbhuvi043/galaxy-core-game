@@ -1,0 +1,1027 @@
+<!--
+© 2026 Bhuvaneshwaran. All rights reserved.
+Galaxy Core Game.
+Unauthorized copying, distribution, or reuse is prohibited.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Galaxy Core — Multi Stage Universe</title>
+  <style>
+    :root{
+      --bg0:#020713;
+      --bg1:#07111f;
+      --bg2:#0b1730;
+      --panel: rgba(255,255,255,.07);
+      --border: rgba(255,255,255,.12);
+      --text:#f7fbff;
+      --muted: rgba(247,251,255,.72);
+      --good:#51e6a6;
+      --danger:#ff5d5d;
+      --warn:#ffd166;
+      --shadow: 0 24px 70px rgba(0,0,0,.42);
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(110,231,255,.16), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(159,183,255,.15), transparent 30%),
+        radial-gradient(circle at 50% 90%, rgba(81,230,166,.06), transparent 24%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 48%, var(--bg2));
+      color:var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      overflow-x:hidden;
+    }
+    button{font:inherit}
+    .page{
+      width:min(1540px,100%);
+      margin:0 auto;
+      padding:18px;
+      display:grid;
+      gap:16px;
+      grid-template-rows:auto auto 1fr auto;
+    }
+    .header,.main{display:grid;gap:12px}
+    .header{grid-template-columns:1.2fr 1fr}
+    .main{grid-template-columns:minmax(0,1.58fr) minmax(320px,.92fr);align-items:start}
+    .panel,.game-shell{
+      border:1px solid var(--border);
+      background:var(--panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow:var(--shadow);
+      border-radius:24px;
+      padding:16px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-badge{
+      width:46px;height:46px;border-radius:50%;flex:0 0 auto;
+      background:linear-gradient(135deg,#6ee7ff,#8f7cff,#51e6a6);
+      box-shadow:0 0 18px rgba(110,231,255,.45);
+    }
+    .brand h1{margin:0;font-size:1.08rem;letter-spacing:-.02em}
+    .brand p{margin:4px 0 0;color:var(--muted);line-height:1.45;font-size:.92rem}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+    .stat{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      padding:12px 12px 10px;
+      min-height:86px;
+    }
+    .stat .k{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+    .stat .v{font-size:1.03rem;font-weight:800;letter-spacing:-.02em;transition:color .25s ease}
+    .stat .v.danger{color:var(--danger)}
+    .stat .s{display:block;margin-top:4px;font-size:.82rem;color:var(--muted);line-height:1.3}
+    .game-shell{padding:14px}
+    .game-frame{
+      position:relative;width:100%;aspect-ratio:16/10;max-height:72vh;overflow:hidden;border-radius:22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:radial-gradient(circle at 50% 45%, rgba(110,231,255,.08), transparent 30%),linear-gradient(180deg, rgba(8,13,24,.92), rgba(4,7,15,.98));
+    }
+    canvas#game{display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+    .sidebar{display:grid;gap:16px}
+    .hud-group,.objective-card{display:grid;gap:12px}
+    .progress-label{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.92rem;margin-bottom:10px}
+    .progress-label strong{color:var(--text)}
+    .bar{width:100%;height:12px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
+    .fill{width:0%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6ee7ff,#8f7cff,#51e6a6);box-shadow:0 0 22px rgba(110,231,255,.35);transition:width .12s linear}
+    .help{color:var(--muted);line-height:1.62;font-size:.95rem}
+    .help strong{color:var(--text)}
+    .buttons{display:flex;flex-wrap:wrap;gap:10px}
+    button{
+      appearance:none;border:0;cursor:pointer;color:var(--text);border-radius:999px;padding:12px 16px;
+      border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);
+      backdrop-filter: blur(16px);-webkit-backdrop-filter: blur(16px);
+      box-shadow:var(--shadow);transition:transform .18s ease, background .18s ease, opacity .18s ease, border-color .18s ease;
+    }
+    button:hover{transform:translateY(-1px)} button:active{transform:translateY(0)}
+    .primary{background:linear-gradient(135deg,#6ee7ff,#8f7cff);color:#04111e;font-weight:800}
+    .danger-off{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.05)}
+    .stage-list,.objective-list{display:grid;gap:10px}
+    .stage-btn,.obj-item{
+      width:100%;display:grid;align-items:center;gap:10px;text-align:left;padding:12px 14px;border-radius:18px;
+      background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+    }
+    .stage-btn{grid-template-columns:18px 1fr auto}
+    .stage-btn .dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 16px currentColor;flex:0 0 auto}
+    .stage-btn .meta{display:grid;gap:2px}
+    .stage-btn .meta strong{font-size:.96rem;letter-spacing:-.02em}
+    .stage-btn .meta span{color:var(--muted);font-size:.84rem;line-height:1.25}
+    .stage-btn .status{color:var(--muted);font-size:.82rem;white-space:nowrap}
+    .stage-btn.active{background:rgba(255,255,255,.12);border-color:rgba(110,231,255,.28);transform:translateY(-1px)}
+    .stage-btn.done{border-color:rgba(81,230,166,.20);background:rgba(81,230,166,.08)}
+    .stage-btn.locked{opacity:.68}
+    .objective-title{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .objective-title strong{font-size:1rem;letter-spacing:-.02em}
+    .objective-title span{color:var(--muted);font-size:.9rem}
+    .obj-item{grid-template-columns:1fr auto;color:var(--muted)}
+    .obj-item strong{color:var(--text)}
+    .obj-item.done{background:rgba(81,230,166,.10);border-color:rgba(81,230,166,.22);color:rgba(247,251,255,.88)}
+    .obj-item.current{border-color:rgba(110,231,255,.35);box-shadow:0 0 0 1px rgba(110,231,255,.14) inset}
+    .overlay{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60;background:rgba(2,5,14,.72);
+      backdrop-filter: blur(8px);-webkit-backdrop-filter: blur(8px);padding:18px;
+    }
+    .overlay.show{display:flex}
+    .modal{
+      width:min(860px,100%);border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg, rgba(15,22,42,.98), rgba(7,11,20,.98));box-shadow:0 30px 120px rgba(0,0,0,.6);
+    }
+    .modal-head{padding:22px 22px 0}
+    .modal-head h2{margin:0;font-size:clamp(1.5rem,3vw,2.3rem);letter-spacing:-.03em}
+    .modal-head p{margin:10px 0 0;color:var(--muted);line-height:1.7}
+    .modal-grid{padding:18px 22px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .card{padding:16px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06)}
+    .card .label{display:block;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:.74rem;margin-bottom:8px}
+    .card .big{font-size:1.25rem;font-weight:800;letter-spacing:-.03em}
+    .card .small{margin-top:6px;color:var(--muted);line-height:1.5;font-size:.92rem}
+    .modal-actions{display:flex;flex-wrap:wrap;gap:10px;padding:18px 22px 22px}
+    .toast{
+      position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-8px);z-index:80;padding:10px 14px;border-radius:999px;
+      background:rgba(8,12,24,.78);border:1px solid rgba(255,255,255,.12);color:var(--text);opacity:0;
+      transition:opacity .22s ease, transform .22s ease;backdrop-filter: blur(12px);pointer-events:none;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media (max-width:1100px){.header,.main{grid-template-columns:1fr}.game-frame{max-height:60vh;aspect-ratio:16/9}}
+    @media (max-width:760px){.page{padding:12px}.stats,.modal-grid{grid-template-columns:1fr}.buttons button,.stage-btn{width:100%}.stage-btn{grid-template-columns:18px 1fr}.stage-btn .status{grid-column:2/-1}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="panel">
+        <div class="brand">
+          <div class="brand-badge"></div>
+          <div>
+            <h1>Galaxy Core — Multi Stage Universe</h1>
+            <p>Stage 1 builds galaxies from particles. Stage 2 and beyond build super galaxies from galaxy sectors, then end in a massive cosmic Big Bang or Supernova.</p>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="stats">
+          <div class="stat">
+            <span class="k">Stage</span>
+            <span class="v" id="globalStageText">Stage 1</span>
+            <span class="s" id="stageModeText">Particle charge</span>
+          </div>
+          <div class="stat">
+            <span class="k">Objective</span>
+            <span class="v" id="stageText">Fire</span>
+            <span class="s" id="stageName">Ignite the core</span>
+          </div>
+          <div class="stat">
+            <span class="k">Time Left</span>
+            <span class="v" id="timeText">04:00</span>
+            <span class="s" id="timeSubText">Stage timer</span>
+          </div>
+          <div class="stat">
+            <span class="k">Progress</span>
+            <span class="v" id="galaxyText">0 / 4</span>
+            <span class="s" id="insideText">0 inside</span>
+          </div>
+          <div class="stat">
+            <span class="k">Status</span>
+            <span class="v" id="statusText">Playing</span>
+            <span class="s" id="soundStatus">Sound on</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="game-shell">
+        <div class="game-frame"><canvas id="game"></canvas></div>
+      </div>
+      <div class="sidebar">
+        <div class="panel hud-group">
+          <div class="progress-label"><strong>Core / build progress</strong><span id="chargeText">0%</span></div>
+          <div class="bar"><div class="fill" id="chargeFill"></div></div>
+          <div class="help" id="stageNote">Hold or drag to pull only the current element into the center.</div>
+        </div>
+        <div class="panel">
+          <div class="help"><strong>How it works:</strong><br>Stage 1 uses center charging to create galaxies. Stage 2, 3, and 4 repeat that same center-charging galaxy creation loop for multiple rounds, then pull finished galaxies into the core to form super galaxies, and finally trigger a final cosmic explosion.</div>
+        </div>
+        <div class="panel"><div class="stage-list" id="stageList"></div></div>
+        <div class="panel">
+          <div class="buttons">
+            <button class="primary" id="holdBtn">Hold Gravity</button>
+            <button id="pulseBtn">Pulse</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="restartBtn">Restart Run</button>
+            <button class="danger-off" id="soundBtn">Sound On</button>
+          </div>
+        </div>
+        <div class="panel objective-card">
+          <div class="objective-title"><strong>Stage plan</strong><span id="planBadge">4 galaxies needed</span></div>
+          <div class="objective-list" id="objectiveList"></div>
+        </div>
+        <div class="panel">
+          <div class="help"><strong>Controls:</strong><br>Drag on canvas or hold the gravity button to attract current targets. Press Pulse for an instant shockwave. Keyboard: <strong>Space</strong> pulse, <strong>P</strong> pause, <strong>R</strong> restart, <strong>M</strong> sound.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="overlayTitle">Big Bang</h2>
+        <p id="overlayBody">The universe responded to your build.</p>
+      </div>
+      <div class="modal-grid">
+        <div class="card">
+          <span class="label">Stage time</span>
+          <div class="big" id="stageTimeCard">00:00</div>
+          <div class="small">Time spent in the current stage or final run.</div>
+        </div>
+        <div class="card">
+          <span class="label">Universe progress</span>
+          <div class="big" id="particlesCard">0 / 4</div>
+          <div class="small">Completed objectives in the active stage.</div>
+        </div>
+        <div class="card">
+          <span class="label">Best full run</span>
+          <div class="big" id="bestCard">--:--</div>
+          <div class="small">Fastest complete run across all unlocked stages in this session.</div>
+        </div>
+        <div class="card">
+          <span class="label">Next step</span>
+          <div class="big" id="nextIdeaCard">Advance</div>
+          <div class="small" id="nextIdeaText">Continue to the next stage or replay the current one.</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="primary" id="nextBtn">Continue</button>
+        <button id="retryBtn">Retry stage</button>
+        <button id="closeBtn">Keep looking</button>
+      </div>
+    </div>
+  </div>
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  const els = {
+    globalStageText: document.getElementById('globalStageText'),
+    stageModeText: document.getElementById('stageModeText'),
+    stageText: document.getElementById('stageText'),
+    stageName: document.getElementById('stageName'),
+    timeText: document.getElementById('timeText'),
+    timeSubText: document.getElementById('timeSubText'),
+    galaxyText: document.getElementById('galaxyText'),
+    insideText: document.getElementById('insideText'),
+    statusText: document.getElementById('statusText'),
+    soundStatus: document.getElementById('soundStatus'),
+    chargeText: document.getElementById('chargeText'),
+    chargeFill: document.getElementById('chargeFill'),
+    stageNote: document.getElementById('stageNote'),
+    planBadge: document.getElementById('planBadge'),
+    stageList: document.getElementById('stageList'),
+    objectiveList: document.getElementById('objectiveList'),
+    toast: document.getElementById('toast'),
+    overlay: document.getElementById('overlay'),
+    overlayTitle: document.getElementById('overlayTitle'),
+    overlayBody: document.getElementById('overlayBody'),
+    stageTimeCard: document.getElementById('stageTimeCard'),
+    particlesCard: document.getElementById('particlesCard'),
+    bestCard: document.getElementById('bestCard'),
+    nextIdeaCard: document.getElementById('nextIdeaCard'),
+    nextIdeaText: document.getElementById('nextIdeaText'),
+    holdBtn: document.getElementById('holdBtn'),
+    pulseBtn: document.getElementById('pulseBtn'),
+    pauseBtn: document.getElementById('pauseBtn'),
+    restartBtn: document.getElementById('restartBtn'),
+    soundBtn: document.getElementById('soundBtn'),
+    nextBtn: document.getElementById('nextBtn'),
+    retryBtn: document.getElementById('retryBtn'),
+    closeBtn: document.getElementById('closeBtn')
+  };
+
+  const TAU = Math.PI * 2;
+  const ELEMENTS = [
+    { key:'fire', label:'Fire', hex:'#ff7a59', glow:'#ffb15e', summary:'Ignite the field with fast heat.' },
+    { key:'ice', label:'Ice', hex:'#6ee7ff', glow:'#baf7ff', summary:'Stabilize the orbit with cold calm.' },
+    { key:'rock', label:'Rock', hex:'#c4a38a', glow:'#ead4bf', summary:'Compress the field into heavy mineral mass.' },
+    { key:'air', label:'Air', hex:'#9fb7ff', glow:'#d8e2ff', summary:'Lift the final flow into sky motion.' }
+  ];
+  const STAGES = [
+    { index:1, title:'Stage 1', mode:'Galaxy Birth', summary:'Collect same-color particles into the core and charge four galaxies.', type:'particleCharge', timeLimit:400, sectorCount:1, particleTarget:0, superChargeNeed:0 },
+    { index:2, title:'Stage 2', mode:'Super Galaxy', summary:'Run the Stage 1 galaxy-birth loop two full times, then merge matching galaxy pairs into super galaxies.', type:'superGalaxy', timeLimit:520, sectorCount:2, particleTarget:0, superChargeNeed:100 },
+    { index:3, title:'Stage 3', mode:'Tri-Sector Cosmos', summary:'Run the Stage 1 galaxy-birth loop three full times, then forge super galaxies from triple galaxy groups.', type:'superGalaxy', timeLimit:660, sectorCount:3, particleTarget:0, superChargeNeed:110 },
+    { index:4, title:'Stage 4', mode:'Grand Universe', summary:'Run the Stage 1 galaxy-birth loop four full times, then pull each full galaxy set into the core to birth the final super structures.', type:'superGalaxy', timeLimit:780, sectorCount:4, particleTarget:0, superChargeNeed:120 }
+  ];
+  const SETTINGS = {
+    startParticles: 28,
+    maxParticles: 84,
+    soundVolume: 0.14,
+    attractStrength: 0.75,
+    stage1ChargeRate: 24,
+    stage1DecayRate: 5.2,
+    stage1StableWin: 1.8,
+    particleBuildRadius: 112,
+    centerRadiusRatio: 0.82,
+    galaxyCaptureRadius: 0.88,
+    superChargeRate: 26,
+    superDecayRate: 7,
+    pulseMax: 2,
+    newBornInterval: 2.2
+  };
+
+  let w=0,h=0,dpr=1,lastFrame=performance.now(),cx=0,cy=0;
+  let stars=[],beams=[],effects=[],particles=[],galaxies=[],superGalaxies=[];
+  let ring={x:0,y:0,radius:132};
+  let field={radius:220};
+  let pointerDown=false,pointerX=0,pointerY=0,pulse=0,paused=false,soundEnabled=true,audioReady=false;
+  let unlockedStage=1,currentStageIndex=1,stageElapsed=0,totalRunTime=0,bestRun=Infinity;
+  let status='playing'; // playing, gameover, stageclear, fullclear
+  let activeColorIndex=0;
+  let stage1Charge=0,stableClock=0;
+  let sectorRound=1,particleCount=0,phase='particle'; // particle, galaxy, collapse, done
+  let galaxyGroups={},superCharge=0,bigBangActive=false,bigBangTimer=0,shock=0,endingFlash=0,spawnClock=0,overlayAction='continue';
+
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+  function rand(min,max){return min+Math.random()*(max-min);}
+  function pick(arr){return arr[(Math.random()*arr.length)|0];}
+  function fmtTime(sec){sec=Math.max(0,Math.floor(sec));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;}
+  function hexToRgb(hex){const h=hex.replace('#','');const full=h.length===3?h.split('').map(ch=>ch+ch).join(''):h;const n=parseInt(full,16);return [(n>>16)&255,(n>>8)&255,n&255];}
+  function currentStage(){return STAGES[currentStageIndex-1];}
+  function currentElement(){return ELEMENTS[activeColorIndex] || null;}
+  function setToast(msg,duration=1300){els.toast.textContent=msg;els.toast.classList.add('show');clearTimeout(setToast._t);setToast._t=setTimeout(()=>els.toast.classList.remove('show'),duration);}
+
+  class SimpleAudio {
+    constructor(){this.ctx=null; this.master=null; this.activeOsc=[];}
+    ensure(){
+      if(this.ctx) return;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return;
+      this.ctx = new Ctx();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.9;
+      this.master.connect(this.ctx.destination);
+    }
+    unlock(){this.ensure(); if(this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); audioReady=true;}
+    tone(freq=440,duration=.12,type='sine',gain=.06,slide=null){
+      if(!soundEnabled) return; this.ensure(); if(!this.ctx) return;
+      const now=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const g=this.ctx.createGain();
+      osc.type=type; osc.frequency.setValueAtTime(freq,now); if(slide) osc.frequency.linearRampToValueAtTime(slide,now+duration);
+      g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(gain,now+0.02); g.gain.exponentialRampToValueAtTime(0.0001,now+duration);
+      osc.connect(g); g.connect(this.master); osc.start(now); osc.stop(now+duration+0.02);
+    }
+    pulse(){ this.tone(240,.08,'triangle',.05,360); this.tone(480,.11,'sine',.03,240); }
+    success(colorIndex=0){ const base=[300,360,260,420][colorIndex]||320; this.tone(base,.16,'triangle',.07,base*1.5); this.tone(base*2,.22,'sine',.03,base*1.2); }
+    superSuccess(colorIndex=0){ const base=[180,220,160,260][colorIndex]||200; this.tone(base,.24,'sawtooth',.08,base*2.2); this.tone(base*1.5,.32,'triangle',.035,base*0.8); }
+    fail(){ this.tone(180,.35,'sawtooth',.08,70); }
+    boom(){ this.tone(90,.5,'sawtooth',.1,20); this.tone(320,.35,'triangle',.045,60); }
+    hum(on){ if(!soundEnabled) on=false; this.ensure(); if(!this.ctx) return; if(on && !this.humOsc){ const now=this.ctx.currentTime; const osc=this.ctx.createOscillator(); const g=this.ctx.createGain(); osc.type='sine'; osc.frequency.value=140; g.gain.value=0.0001; osc.connect(g); g.connect(this.master); osc.start(now); g.gain.exponentialRampToValueAtTime(0.018,now+0.08); this.humOsc=osc; this.humGain=g; } else if(!on && this.humOsc){ const now=this.ctx.currentTime; this.humGain.gain.exponentialRampToValueAtTime(0.0001,now+0.06); this.humOsc.stop(now+0.09); this.humOsc=null; this.humGain=null; } }
+  }
+  const audio = new SimpleAudio();
+
+  function initGalaxyGroups(){ galaxyGroups={}; for(const el of ELEMENTS) galaxyGroups[el.key]=[]; }
+
+  function getBuildCount(colorKey){ return galaxyGroups[colorKey]?.filter(g=>!g.isSuper).length || 0; }
+  function requiredGroupCount(){ return currentStage().sectorCount; }
+  function stageProgressCount(){
+    const stage=currentStage();
+    if(stage.type==='particleCharge') return galaxies.filter(g=>!g.isSuper).length;
+    return superGalaxies.length;
+  }
+
+  function describePhase(){
+    const stage=currentStage();
+    if(stage.type==='particleCharge') return 'Particle charge';
+    if(phase==='particle') return `Sector ${sectorRound} build`;
+    if(phase==='galaxy') return 'Super galaxy forge';
+    if(phase==='collapse') return stage.index===2 ? 'Supernova' : 'Cosmic collapse';
+    return 'Complete';
+  }
+
+  function renderStageCards(){
+    els.stageList.innerHTML='';
+    STAGES.forEach(stage=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='stage-btn';
+      btn.innerHTML=`<span class="dot" style="color:${['#6ee7ff','#51e6a6','#ffd166','#ff7a59'][stage.index-1]};background:${['#6ee7ff','#51e6a6','#ffd166','#ff7a59'][stage.index-1]}"></span><span class="meta"><strong>${stage.title}</strong><span>${stage.summary}</span></span><span class="status"></span>`;
+      btn.addEventListener('click',()=>{
+        if(stage.index>unlockedStage){ setToast(`Locked until ${STAGES[stage.index-2].title} is complete`,1200); return; }
+        if(stage.index===currentStageIndex){ setToast(`${stage.title} is active`,900); return; }
+        currentStageIndex=stage.index; totalRunTime=0; startStage(true); setToast(`Switched to ${stage.title}`);
+      });
+      els.stageList.appendChild(btn);
+    });
+  }
+
+  function updateStageCards(){
+    [...els.stageList.querySelectorAll('.stage-btn')].forEach((btn,i)=>{
+      const stageNo=i+1; const st=STAGES[i]; const statusEl=btn.querySelector('.status');
+      btn.classList.toggle('active', stageNo===currentStageIndex && status==='playing');
+      btn.classList.toggle('done', stageNo<currentStageIndex || stageNo<unlockedStage);
+      btn.classList.toggle('locked', stageNo>unlockedStage);
+      if(stageNo<currentStageIndex || stageNo<unlockedStage) statusEl.textContent='Open';
+      else if(stageNo===currentStageIndex) statusEl.textContent='Current';
+      else statusEl.textContent='Locked';
+    });
+  }
+
+  function renderObjectiveList(){
+    els.objectiveList.innerHTML='';
+    const stage=currentStage();
+    if(stage.type==='particleCharge'){
+      ELEMENTS.forEach((el,idx)=>{
+        const row=document.createElement('div'); row.className='obj-item'; row.id=`obj-${el.key}`;
+        row.innerHTML=`<strong>${idx+1}. ${el.label}</strong><span>Waiting</span>`; els.objectiveList.appendChild(row);
+      });
+      els.planBadge.textContent='4 galaxies needed';
+      return;
+    }
+    ELEMENTS.forEach((el,idx)=>{
+      const row=document.createElement('div'); row.className='obj-item'; row.id=`obj-${el.key}`;
+      row.innerHTML=`<strong>${idx+1}. ${el.label}</strong><span>0 / ${requiredGroupCount()} galaxies</span>`; els.objectiveList.appendChild(row);
+    });
+    els.planBadge.textContent=`${requiredGroupCount()} sectors per super galaxy`;
+  }
+
+  function updateObjectiveList(){
+    const stage=currentStage();
+    ELEMENTS.forEach((el,idx)=>{
+      const row=document.getElementById(`obj-${el.key}`); if(!row) return;
+      row.classList.remove('done','current');
+      const span=row.querySelector('span');
+      if(stage.type==='particleCharge'){
+        const done=idx<activeColorIndex || (status!=='playing' && idx<galaxies.length);
+        row.classList.toggle('done', done);
+        row.classList.toggle('current', idx===activeColorIndex && status==='playing');
+        span.textContent = done ? 'Done' : (idx===activeColorIndex && status==='playing' ? 'Active' : 'Waiting');
+      } else {
+        const built=getBuildCount(el.key); const done=superGalaxies.some(g=>g.key===el.key);
+        row.classList.toggle('done', done);
+        row.classList.toggle('current', !done && idx===activeColorIndex && status==='playing');
+        span.textContent = done ? 'Super galaxy done' : `${built} / ${requiredGroupCount()} galaxies`;
+      }
+    });
+  }
+
+  function updateTexts(){
+    const stage=currentStage(); const el=currentElement();
+    els.globalStageText.textContent=stage.title;
+    els.stageModeText.textContent=describePhase();
+    const timeLeft=Math.max(0,stage.timeLimit-stageElapsed);
+    els.timeText.textContent=fmtTime(timeLeft);
+    els.timeText.classList.toggle('danger', timeLeft<=30);
+    els.timeSubText.textContent=stage.type==='particleCharge' ? 'Stage timer' : `Round ${Math.min(sectorRound,stage.sectorCount)} of ${stage.sectorCount}`;
+    els.soundStatus.textContent=soundEnabled?'Sound on':'Sound off';
+    els.soundBtn.textContent=soundEnabled?'Sound On':'Sound Off';
+
+    if(status==='gameover'){
+      els.stageText.textContent='Failed';
+      els.stageName.textContent='The universe destabilized';
+      els.insideText.textContent='Time up';
+      els.statusText.textContent='Game Over';
+      els.chargeText.textContent='0%'; els.chargeFill.style.width='0%';
+      return;
+    }
+    if(phase==='collapse' || bigBangActive){
+      els.stageText.textContent = stage.index===1 ? 'Big Bang' : 'Supernova';
+      els.stageName.textContent = stage.index===1 ? 'All galaxies collapsing into the core' : 'All super galaxies collapsing into the core';
+      els.insideText.textContent = `${stageProgressCount()} / 4 completed`;
+      els.statusText.textContent = 'Collapse';
+      els.chargeText.textContent = `${Math.round(superCharge || 100)}%`;
+      els.chargeFill.style.width = `${clamp(superCharge || 100,0,100)}%`;
+      return;
+    }
+    if(!el){
+      els.stageText.textContent='Complete';
+      els.stageName.textContent='Universe complete';
+      els.insideText.textContent='All objectives achieved';
+      els.statusText.textContent='Complete';
+      return;
+    }
+    els.stageText.textContent=el.label;
+    if(stage.type==='particleCharge'){
+      els.stageName.textContent=`Collect only ${el.label.toLowerCase()} particles into the center`;
+      els.stageNote.textContent=`Stage 1: pull only ${el.label} particles into the core ring and keep them stable until charge reaches 100%.`;
+      els.galaxyText.textContent=`${galaxies.filter(g=>!g.isSuper).length} / 4`;
+      const inside=countMatchingParticlesInside(el.key);
+      els.insideText.textContent=`${inside} ${el.label.toLowerCase()} inside`;
+      els.chargeText.textContent=`${Math.round(stage1Charge)}%`;
+      els.chargeFill.style.width=`${stage1Charge}%`;
+      els.statusText.textContent=paused?'Paused':'Playing';
+    } else if(phase==='particle'){
+      els.stageName.textContent=`Round ${sectorRound}: charge a ${el.label.toLowerCase()} galaxy exactly like Stage 1`;
+      els.stageNote.textContent=`Stage ${stage.index} particle phase: repeat the Stage 1 core-charge flow ${requiredGroupCount()} times. Build ${el.label} in the center, then move to the next color while newborn particles continue spawning.`;
+      els.galaxyText.textContent=`${galaxies.filter(g=>!g.isSuper).length} / ${requiredGroupCount()*4}`;
+      const inside=countMatchingParticlesInside(el.key);
+      els.insideText.textContent=`${inside} ${el.label.toLowerCase()} inside`;
+      els.chargeText.textContent=`${Math.round(stage1Charge)}%`;
+      els.chargeFill.style.width=`${stage1Charge}%`;
+      els.statusText.textContent=paused?'Paused':'Charging';
+    } else if(phase==='galaxy'){
+      const built=getBuildCount(el.key);
+      const needed=requiredGroupCount();
+      els.stageName.textContent=`Pull ${needed} ${el.label.toLowerCase()} galaxies into the center to forge a super galaxy`;
+      els.stageNote.textContent=`Galaxy forge: bring all ${needed} completed ${el.label} galaxies into the black hole and keep them stable to charge the super forge.`;
+      els.galaxyText.textContent=`${superGalaxies.length} / 4`;
+      const inside=countMatchingGalaxiesInside(el.key);
+      els.insideText.textContent=`${inside} / ${needed} galaxies in core`;
+      els.chargeText.textContent=`${Math.round(superCharge)}%`;
+      els.chargeFill.style.width=`${superCharge}%`;
+      els.statusText.textContent=paused?'Paused':'Forge';
+    }
+  }
+
+  function createParticle(colorKey){
+    const side=(Math.random()*4)|0; const margin=46; let x,y;
+    if(side===0){x=rand(-margin,w+margin);y=-margin;} else if(side===1){x=w+margin;y=rand(-margin,h+margin);} else if(side===2){x=rand(-margin,w+margin);y=h+margin;} else {x=-margin;y=rand(-margin,h+margin);}
+    const el=ELEMENTS.find(e=>e.key===colorKey) || ELEMENTS[0];
+    return { kind:'particle', x,y, vx:rand(-0.12,0.12), vy:rand(-0.12,0.12), baseR:rand(4.6,6.8), r:rand(4.6,6.8), colorKey:el.key, color:el.hex, glow:el.glow, phase:rand(0,TAU), life:1 };
+  }
+
+  function spawnRandomParticle(allowedKeys){ particles.push(createParticle(pick(allowedKeys))); }
+
+  function spawnWeightedCurrentParticles(batch=1){
+    const target=currentElement();
+    const prev=ELEMENTS[(activeColorIndex+ELEMENTS.length-1)%ELEMENTS.length];
+    const all=ELEMENTS.map(e=>e.key);
+    for(let i=0;i<batch;i++){
+      let key;
+      const r=Math.random();
+      if(target && r<0.62) key=target.key;
+      else if(target && prev && r<0.82) key=prev.key;
+      else key=pick(all);
+      particles.push(createParticle(key));
+    }
+  }
+
+  function initParticles(){
+    particles=[];
+    const stage=currentStage(); const allowed=ELEMENTS.map(e=>e.key);
+    const count=stage.type==='particleCharge'?SETTINGS.startParticles:Math.min(42,SETTINGS.startParticles+stage.index*4);
+    for(let i=0;i<count;i++){
+      if(stage.type==='particleCharge') spawnRandomParticle(allowed);
+      else spawnWeightedCurrentParticles(1);
+    }
+  }
+
+  function burst(x,y,color,count=22,power=220){
+    for(let i=0;i<count;i++){
+      const a=Math.random()*TAU; const s=rand(power*.25,power);
+      effects.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:rand(1.4,3.6),life:rand(.45,.95),color,kind:'spark'});
+    }
+  }
+
+  function addGalaxy(colorKey, isSuper=false){
+    const el=ELEMENTS.find(e=>e.key===colorKey); const seed=Math.random()*1000;
+    const slotCount=isSuper?4:requiredGroupCount()*4;
+    const existing=isSuper?superGalaxies.length:galaxies.filter(g=>!g.isSuper).length;
+    const ang = (existing / Math.max(1,slotCount)) * TAU + rand(-0.18,0.18);
+    const dist = isSuper ? rand(ring.radius*1.15, ring.radius*1.38) : rand(ring.radius*1.75, ring.radius*2.25);
+    const galaxy={ kind:'galaxy', key:colorKey, color:el.hex, glow:el.glow, pulse:0, ang, dist, spin:rand(0.18,0.38)*(Math.random()>.5?1:-1), inward:rand(.24,.38), x:ring.x+Math.cos(ang)*dist, y:ring.y+Math.sin(ang)*dist, size:isSuper?rand(22,28):rand(14,20), seed, isSuper, coreCharge:0 };
+    if(isSuper) superGalaxies.push(galaxy); else { galaxies.push(galaxy); galaxyGroups[colorKey].push(galaxy); }
+    burst(ring.x,ring.y,el.hex,isSuper?68:50,isSuper?380:300);
+    if(isSuper) audio.superSuccess(ELEMENTS.findIndex(e=>e.key===colorKey)); else audio.success(ELEMENTS.findIndex(e=>e.key===colorKey));
+  }
+
+  function resetStateForStage(){
+    stageElapsed=0; activeColorIndex=0; stage1Charge=0; stableClock=0; sectorRound=1; particleCount=0; phase='particle';
+    superCharge=0; bigBangActive=false; bigBangTimer=0; shock=0; endingFlash=0; status='playing'; paused=false; pulse=0; spawnClock=0;
+    particles=[]; galaxies=[]; superGalaxies=[]; effects=[]; initGalaxyGroups(); initParticles(); els.overlay.classList.remove('show'); els.pauseBtn.textContent='Pause';
+  }
+
+  function startStage(silent=false){
+    resetStateForStage();
+    const stage=currentStage();
+    if(stage.type==='particleCharge') phase='particle';
+    pointerDown=false; audio.hum(false); renderObjectiveList(); updateObjectiveList(); updateStageCards(); updateTexts();
+    if(!silent) setToast(`${stage.title} started`, 1000);
+  }
+
+  function resize(){
+    const prevW=w||1, prevH=h||1;
+    const snapshot={ particles: particles.map(p=>({...p})), galaxies: galaxies.map(g=>({...g})), superGalaxies: superGalaxies.map(g=>({...g})), effects: effects.map(e=>({...e})) };
+    dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2));
+    const frame=canvas.parentElement; w=frame.clientWidth; h=frame.clientHeight; cx=w/2; cy=h/2; ring.x=cx; ring.y=cy; ring.radius=Math.max(112,Math.min(w,h)*0.185); field.radius=ring.radius*1.75;
+    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr); canvas.style.width=w+'px'; canvas.style.height=h+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);
+    stars=Array.from({length:Math.round((w*h)/12000)+60},()=>({x:Math.random()*w,y:Math.random()*h,r:rand(.35,1.7),a:rand(.08,.9),s:rand(.03,.12),c:Math.random()>.86?pick(['#6ee7ff','#8f7cff','#51e6a6']):'#ffffff'}));
+    beams=[]; const count=Math.round((w*h)/42000)+8; for(let i=0;i<count;i++) beams.push({x:Math.random()*w,y:Math.random()*h,len:rand(120,260),ang:rand(-.18,.18),a:rand(.03,.1),c:Math.random()>.5?'rgba(110,231,255,':'rgba(143,124,255,'});
+    if(snapshot.particles.length || snapshot.galaxies.length || snapshot.superGalaxies.length || snapshot.effects.length){
+      const sx=w/prevW, sy=h/prevH;
+      particles=snapshot.particles.map(p=>({...p,x:p.x*sx,y:p.y*sy}));
+      galaxies=snapshot.galaxies.map(g=>({...g,x:g.x*sx,y:g.y*sy,dist:g.dist*Math.min(sx,sy)}));
+      superGalaxies=snapshot.superGalaxies.map(g=>({...g,x:g.x*sx,y:g.y*sy,dist:g.dist*Math.min(sx,sy)}));
+      effects=snapshot.effects.map(e=>({...e,x:e.x*sx,y:e.y*sy}));
+      initGalaxyGroups(); galaxies.forEach(g=>galaxyGroups[g.key].push(g));
+    }
+  }
+
+  function countMatchingParticlesInside(colorKey){
+    const rr=ring.radius*SETTINGS.centerRadiusRatio; let count=0;
+    for(const p of particles){ if(p.colorKey!==colorKey) continue; if(Math.hypot(p.x-ring.x,p.y-ring.y)<=rr) count++; }
+    return count;
+  }
+  function listMatchingGalaxiesInside(colorKey){
+    const rr=ring.radius*SETTINGS.galaxyCaptureRadius;
+    return galaxies.filter(g=>g.key===colorKey && Math.hypot(g.x-ring.x,g.y-ring.y)<=rr);
+  }
+  function countMatchingGalaxiesInside(colorKey){ return listMatchingGalaxiesInside(colorKey).length; }
+
+  function removeParticlesInside(colorKey, amount){
+    const rr=ring.radius*SETTINGS.centerRadiusRatio; let removed=0; const keep=[];
+    for(const p of particles){
+      if(removed<amount && p.colorKey===colorKey && Math.hypot(p.x-ring.x,p.y-ring.y)<=rr){ burst(p.x,p.y,p.color,6,120); removed++; }
+      else keep.push(p);
+    }
+    particles=keep;
+  }
+
+  function completeStage1Galaxy(){
+    const el=currentElement();
+    removeParticlesInside(el.key, countMatchingParticlesInside(el.key));
+    addGalaxy(el.key,false);
+    activeColorIndex+=1; stage1Charge=0; stableClock=0;
+    if(activeColorIndex>=ELEMENTS.length){ beginCollapse(); return; }
+    for(let i=0;i<8;i++) spawnRandomParticle(ELEMENTS.map(e=>e.key));
+    setToast(`${el.label} galaxy created!`, 1100);
+    updateObjectiveList();
+  }
+
+  function completeParticleBuildGalaxy(){
+    const el=currentElement(); const stage=currentStage();
+    removeParticlesInside(el.key, countMatchingParticlesInside(el.key));
+    addGalaxy(el.key,false);
+    particleCount=0;
+    stage1Charge=0;
+    stableClock=0;
+
+    const finishedColorIndex=activeColorIndex;
+    const nextColorIndex=(activeColorIndex+1) % ELEMENTS.length;
+    activeColorIndex=nextColorIndex;
+    if(nextColorIndex===0){
+      sectorRound += 1;
+    }
+
+    const newbornKey = ELEMENTS[finishedColorIndex].key;
+    const upcomingKey = ELEMENTS[nextColorIndex].key;
+    for(let i=0;i<7;i++) particles.push(createParticle(upcomingKey));
+    for(let i=0;i<5;i++) particles.push(createParticle(newbornKey));
+    for(let i=0;i<3;i++) spawnRandomParticle(ELEMENTS.map(e=>e.key));
+
+    if(sectorRound>requiredGroupCount()){
+      phase='galaxy';
+      activeColorIndex=0;
+      sectorRound=requiredGroupCount();
+      superCharge=0;
+      stage1Charge=0;
+      stableClock=0;
+      setToast('Galaxy forge phase started', 1300);
+    } else {
+      setToast(`${el.label} galaxy created — moving to ${ELEMENTS[nextColorIndex].label}`, 1100);
+    }
+    updateObjectiveList();
+  }
+
+  function completeSuperGalaxy(){
+    const el=currentElement();
+    const used=listMatchingGalaxiesInside(el.key).slice(0,requiredGroupCount());
+    const removeSet=new Set(used);
+    galaxies=galaxies.filter(g=>!removeSet.has(g));
+    initGalaxyGroups(); galaxies.forEach(g=>galaxyGroups[g.key].push(g));
+    used.forEach(g=>burst(g.x,g.y,g.color,14,240));
+    addGalaxy(el.key,true);
+    superCharge=0;
+    activeColorIndex+=1;
+    updateObjectiveList();
+    if(activeColorIndex>=ELEMENTS.length){ beginCollapse(); return; }
+    setToast(`${el.label} super galaxy forged!`, 1250);
+  }
+
+  function beginCollapse(){
+    phase='collapse'; bigBangActive=true; bigBangTimer=0; endingFlash=.18; shock=.2; audio.hum(false);
+    els.statusText.textContent='Collapse';
+    setToast(currentStage().index===1?'Big Bang sequence started':'Supernova sequence started',1300);
+  }
+
+  function finishStage(){
+    const stage=currentStage();
+    status = currentStageIndex===STAGES.length ? 'fullclear' : 'stageclear';
+    if(currentStageIndex===STAGES.length && totalRunTime<bestRun) bestRun=totalRunTime;
+    unlockedStage=Math.max(unlockedStage, Math.min(STAGES.length, currentStageIndex+1));
+    updateStageCards();
+    els.overlayTitle.textContent = stage.index===1 ? 'Big Bang!' : (stage.index===STAGES.length ? 'Universe Mastered!' : 'Supernova!');
+    els.overlayBody.textContent = stage.index===1
+      ? 'You built four galaxies from pure particles and collapsed them into a newborn universe.'
+      : `You completed ${stage.title} by building ${requiredGroupCount()} sectors per color, forging four super galaxies, and detonating a cosmic ending.`;
+    els.stageTimeCard.textContent=fmtTime(stageElapsed);
+    els.particlesCard.textContent=`${stageProgressCount()} / 4`;
+    els.bestCard.textContent=bestRun===Infinity?'--:--':fmtTime(bestRun);
+    if(currentStageIndex<STAGES.length){
+      els.nextIdeaCard.textContent = STAGES[currentStageIndex].title;
+      els.nextIdeaText.textContent = 'Continue to the next stage or replay this stage.';
+      els.nextBtn.textContent='Next Stage';
+      overlayAction='continue';
+    } else {
+      els.nextIdeaCard.textContent = 'Replay';
+      els.nextIdeaText.textContent = 'All stages are complete. Restart from Stage 1 or replay any stage from the sidebar.';
+      els.nextBtn.textContent='Restart Full Run';
+      overlayAction='fullreset';
+    }
+    els.overlay.classList.add('show');
+    audio.boom();
+  }
+
+  function triggerGameOver(){
+    if(status==='gameover') return;
+    status='gameover'; pointerDown=false; audio.hum(false); audio.fail();
+    particles.forEach(p=>burst(p.x,p.y,p.color,12,220)); particles=[];
+    galaxies.forEach(g=>burst(g.x,g.y,g.color,16,260)); superGalaxies.forEach(g=>burst(g.x,g.y,g.color,20,300));
+    setTimeout(()=>{
+      els.overlayTitle.textContent='Time\'s Up!';
+      els.overlayBody.textContent='The core destabilized before the cosmic structure could be completed. Build flow stopped before the final galaxy chain could finish.';
+      els.stageTimeCard.textContent=fmtTime(stageElapsed);
+      els.particlesCard.textContent=`${stageProgressCount()} / 4`;
+      els.bestCard.textContent=bestRun===Infinity?'--:--':fmtTime(bestRun);
+      els.nextIdeaCard.textContent='Retry';
+      els.nextIdeaText.textContent='Replay the current stage or choose another unlocked stage.';
+      els.nextBtn.textContent='Retry Stage';
+      overlayAction='retry';
+      els.overlay.classList.add('show');
+    },900);
+  }
+
+  function updateParticles(dt){
+    const el=currentElement(); if(!el) return;
+    const allowedKeys=ELEMENTS.map(e=>e.key);
+    spawnClock += dt;
+    const spawnEvery = Math.max(.58, SETTINGS.newBornInterval - currentStageIndex*.1 + (phase==='particle' ? 0 : .45));
+    if(spawnClock>=spawnEvery && particles.length<SETTINGS.maxParticles){
+      spawnClock=0;
+      const batch = currentStage().type==='particleCharge' ? 2 : (phase==='particle' ? 4 : 2);
+      if(currentStage().type==='particleCharge'){
+        for(let i=0;i<batch;i++) spawnRandomParticle(allowedKeys);
+      } else if(phase==='particle'){
+        spawnWeightedCurrentParticles(batch);
+      } else {
+        for(let i=0;i<batch;i++) spawnRandomParticle(allowedKeys);
+      }
+    }
+
+    for(const p of particles){
+      const dxRing=ring.x-p.x, dyRing=ring.y-p.y; const dRing=Math.hypot(dxRing,dyRing)+0.0001;
+      p.vx += (-dyRing/dRing)*(0.0010+currentStageIndex*0.0001)*dt*60;
+      p.vy += ( dxRing/dRing)*(0.0010+currentStageIndex*0.0001)*dt*60;
+
+      const currentTarget = currentElement();
+      const attractTarget = (currentStage().type==='particleCharge' || phase==='particle') && p.colorKey===currentTarget.key;
+      if(pointerDown && attractTarget){
+        const dx=pointerX-p.x, dy=pointerY-p.y; const d=Math.hypot(dx,dy)+0.0001;
+        if(d<field.radius){ const force=(1-d/field.radius)*(SETTINGS.attractStrength + currentStageIndex*0.05); p.vx+=(dx/d)*force*dt*1.35; p.vy+=(dy/d)*force*dt*1.35; }
+      }
+      if(attractTarget){
+        p.vx += (dxRing/dRing)*(0.00042 + currentStageIndex*0.00005)*dt*60;
+        p.vy += (dyRing/dRing)*(0.00042 + currentStageIndex*0.00005)*dt*60;
+      }
+      galaxies.concat(superGalaxies).forEach(g=>{
+        const dx=g.x-p.x, dy=g.y-p.y, d=Math.hypot(dx,dy)+0.0001; const pull=0.00008 + g.size*0.000002;
+        p.vx += (dx/d)*pull*dt*60; p.vy += (dy/d)*pull*dt*60;
+      });
+      p.vx *= Math.pow(0.9972,dt*60); p.vy *= Math.pow(0.9972,dt*60);
+      const cap=1.1 + currentStageIndex*0.1; const sp=Math.hypot(p.vx,p.vy); if(sp>cap){ p.vx=p.vx/sp*cap; p.vy=p.vy/sp*cap; }
+      p.x += p.vx*dt*60; p.y += p.vy*dt*60;
+      const pad=10,minX=pad+p.r,maxX=w-pad-p.r,minY=pad+p.r,maxY=h-pad-p.r;
+      if(p.x<minX){p.x=minX;p.vx*=-0.88;} if(p.x>maxX){p.x=maxX;p.vx*=-0.88;} if(p.y<minY){p.y=minY;p.vy*=-0.88;} if(p.y>maxY){p.y=maxY;p.vy*=-0.88;}
+      p.r += (p.baseR-p.r)*0.08; p.phase += dt*1.2;
+    }
+    if(particles.length>SETTINGS.maxParticles) particles.splice(0,particles.length-SETTINGS.maxParticles);
+  }
+
+  function updateStage1(dt){
+    const current=currentElement(); if(!current) return;
+    const selectedTotal=particles.filter(p=>p.colorKey===current.key).length;
+    const inside=countMatchingParticlesInside(current.key);
+    const allInside = selectedTotal>0 && inside===selectedTotal;
+    if(allInside){ stage1Charge += dt*SETTINGS.stage1ChargeRate; stableClock += dt; }
+    else { stage1Charge -= dt*SETTINGS.stage1DecayRate; stableClock=0; }
+    stage1Charge = clamp(stage1Charge,0,100);
+    if(stage1Charge>=100 && stableClock>=SETTINGS.stage1StableWin && selectedTotal>0) completeStage1Galaxy();
+  }
+
+  function updateSuperStageParticle(dt){
+    const el=currentElement(); if(!el) return;
+    const selectedTotal=particles.filter(p=>p.colorKey===el.key).length;
+    const inside=countMatchingParticlesInside(el.key);
+    const allInside = selectedTotal>0 && inside===selectedTotal;
+    if(allInside){ stage1Charge += dt*(SETTINGS.stage1ChargeRate + currentStageIndex*1.4); stableClock += dt; }
+    else { stage1Charge -= dt*(SETTINGS.stage1DecayRate + currentStageIndex*0.35); stableClock=0; }
+    stage1Charge = clamp(stage1Charge,0,100);
+    particleCount = inside;
+    if(stage1Charge>=100 && stableClock>=Math.max(1.35, SETTINGS.stage1StableWin - currentStageIndex*0.06) && selectedTotal>0){
+      completeParticleBuildGalaxy();
+    }
+  }
+
+  function updateSuperStageGalaxy(dt){
+    const el=currentElement(); if(!el) return;
+    const inside = countMatchingGalaxiesInside(el.key);
+    const need = requiredGroupCount();
+    if(inside>=need){ superCharge += dt*(SETTINGS.superChargeRate + currentStageIndex*2); }
+    else { superCharge -= dt*(SETTINGS.superDecayRate + currentStageIndex*.3); }
+    superCharge = clamp(superCharge,0,100);
+    if(superCharge>=100) completeSuperGalaxy();
+  }
+
+  function updateGalaxies(dt){
+    const all=galaxies.concat(superGalaxies);
+    const collapseStrength = bigBangActive ? (1.2 + bigBangTimer*1.6) : 0.28;
+    for(const g of all){
+      g.pulse += dt*(bigBangActive?2.8:1); g.ang += g.spin*dt*(bigBangActive?(3.5+bigBangTimer*1.8):1.8);
+      if(bigBangActive) g.dist=Math.max(0,g.dist-(g.inward*24+12+bigBangTimer*16)*dt);
+      const wobble = Math.sin(g.pulse*2.1 + g.seed) * (bigBangActive ? (3.8 - Math.min(2.2,bigBangTimer*1.6)) : 2.1);
+      if(!bigBangActive){
+        const targetDist = g.isSuper ? ring.radius*1.25 : ring.radius*(1.85 + (g.seed%40)/100);
+        g.dist += (targetDist - g.dist) * dt * collapseStrength;
+      }
+      if(pointerDown && phase==='galaxy' && !g.isSuper && g.key===currentElement().key){
+        const dx=pointerX-g.x, dy=pointerY-g.y, d=Math.hypot(dx,dy)+0.0001;
+        if(d<field.radius*1.02){ const force=(1-d/(field.radius*1.02))*(0.68 + currentStageIndex*0.05); g.x += (dx/d)*force*dt*120; g.y += (dy/d)*force*dt*120; g.dist = Math.hypot(g.x-ring.x, g.y-ring.y); g.ang = Math.atan2(g.y-ring.y, g.x-ring.x); }
+      }
+      const tx=ring.x + Math.cos(g.ang)*(g.dist+wobble); const ty=ring.y + Math.sin(g.ang)*(g.dist+wobble);
+      if(!(pointerDown && phase==='galaxy' && !g.isSuper && g.key===currentElement().key && Math.hypot(pointerX-g.x,pointerY-g.y)<field.radius*1.02)){
+        g.x += (tx-g.x)*dt*4.2; g.y += (ty-g.y)*dt*4.2;
+      }
+      if(bigBangActive && g.dist<28 && Math.random()<dt*18) burst(g.x,g.y,g.color,3,80);
+    }
+    if(bigBangActive){
+      bigBangTimer += dt; shock = clamp(shock + dt*.45,0,1.5); endingFlash = Math.max(endingFlash, clamp(1.15 - bigBangTimer*.4,0,1));
+      if(Math.random()<dt*26){
+        burst(ring.x+rand(-12,12),ring.y+rand(-12,12),pick(ELEMENTS).hex,3,180);
+      }
+      if(Math.random()<dt*7){
+        const pool=superGalaxies.length?superGalaxies:galaxies;
+        if(pool.length){
+          const a=pool[(Math.random()*pool.length)|0];
+          const b=pool[(Math.random()*pool.length)|0];
+          burst((a.x+b.x)/2,(a.y+b.y)/2,a.color,8,240);
+        }
+      }
+      if(bigBangTimer>2.9) { bigBangActive=false; finishStage(); }
+    } else {
+      endingFlash=Math.max(0,endingFlash-dt*.9);
+    }
+  }
+
+  function drawBackground(t){
+    const g=ctx.createLinearGradient(0,0,0,h); g.addColorStop(0,'#08111f'); g.addColorStop(.48,'#071223'); g.addColorStop(1,'#03050d'); ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    const neb=ctx.createRadialGradient(w*.28,h*.18,20,w*.5,h*.5,Math.max(w,h)*.8); neb.addColorStop(0,'rgba(110,231,255,0.12)'); neb.addColorStop(.45,'rgba(143,124,255,0.08)'); neb.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=neb; ctx.fillRect(0,0,w,h);
+    for(const s of stars){ s.y += s.s*(0.45+currentStageIndex*.02); if(s.y>h+2){ s.y=-2; s.x=Math.random()*w; } ctx.globalAlpha=s.a; ctx.fillStyle=s.c; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,TAU); ctx.fill(); }
+    ctx.globalAlpha=1;
+    for(const b of beams){ ctx.save(); ctx.translate(b.x,b.y); ctx.rotate(b.ang); ctx.strokeStyle=`${b.c}${b.a})`; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(-b.len*.5,0); ctx.lineTo(b.len*.5,0); ctx.stroke(); ctx.restore(); }
+  }
+
+  function drawField(){
+    if(!pointerDown && pulse<=0) return;
+    const col=currentElement()?currentElement().hex:'#6ee7ff'; const rgb=hexToRgb(col); const a=pointerDown?0.08:0.03; const r=field.radius*(pointerDown?1:.92);
+    const g=ctx.createRadialGradient(pointerX,pointerY,0,pointerX,pointerY,r); g.addColorStop(0,`rgba(${rgb.join(',')},${a*2})`); g.addColorStop(.45,`rgba(${rgb.join(',')},${a})`); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(pointerX,pointerY,r,0,TAU); ctx.fill();
+  }
+
+  function drawRing(t){
+    const stage=currentStage();
+    const ratio = stage.type==='particleCharge' ? clamp(stage1Charge/100,0,1) : clamp((phase==='galaxy'?superCharge:stage1Charge)/100,0,1);
+    const color = status==='gameover' ? '#ff5d5d' : (currentElement()?currentElement().hex:'#51e6a6');
+    const rgb=hexToRgb(color); const r=ring.radius*(1 + Math.sin(t*0.0022)*0.01 + pulse*0.02);
+    const halo=ctx.createRadialGradient(ring.x,ring.y,r*.15,ring.x,ring.y,r*1.55); halo.addColorStop(0,'rgba(0,0,0,.12)'); halo.addColorStop(.45,`rgba(${rgb.join(',')},0.10)`); halo.addColorStop(.75,'rgba(143,124,255,.07)'); halo.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(ring.x,ring.y,r*1.35,0,TAU); ctx.fill();
+    ctx.save(); ctx.shadowColor=color; ctx.shadowBlur=18; ctx.strokeStyle=`rgba(255,255,255,${0.16+ratio*0.18})`; ctx.lineWidth=2.2; ctx.beginPath(); ctx.arc(ring.x,ring.y,r,0,TAU); ctx.stroke(); ctx.restore();
+    const core=ctx.createRadialGradient(ring.x,ring.y,0,ring.x,ring.y,r*.9); core.addColorStop(0,'rgba(7,12,24,.18)'); core.addColorStop(.7,'rgba(7,12,24,.46)'); core.addColorStop(1,'rgba(0,0,0,.75)'); ctx.fillStyle=core; ctx.beginPath(); ctx.arc(ring.x,ring.y,r*.84,0,TAU); ctx.fill();
+    ctx.lineWidth = phase==='galaxy' ? 10 : 8; ctx.strokeStyle = `rgba(${rgb.join(',')},${0.10+ratio*0.46})`; ctx.beginPath(); ctx.arc(ring.x,ring.y,r+10,-Math.PI/2,-Math.PI/2+TAU*ratio); ctx.stroke();
+    ctx.save(); ctx.fillStyle = status==='gameover' ? 'rgba(255,93,93,.96)' : (ratio>=1?'rgba(81,230,166,.96)':'rgba(255,255,255,.82)'); ctx.textAlign='center'; ctx.font='800 14px Inter, ui-sans-serif, system-ui, sans-serif';
+    let txt='';
+    if(status==='gameover') txt='FAILED';
+    else if(bigBangActive) txt=currentStage().index===1?'BIG BANG':'SUPERNOVA';
+    else if(phase==='galaxy') txt=ratio>=1?'FORGED':`${Math.round(superCharge)}%`;
+    else txt=ratio>=1?'STABLE':`${Math.round(ratio*100)}%`;
+    ctx.fillText(txt,ring.x,ring.y+5); ctx.restore();
+  }
+
+  function drawGalaxy(g){
+    const orbit1=12+Math.sin(g.pulse*1.4)*1.2, orbit2=(g.isSuper?28:20)+Math.cos(g.pulse*1.1)*1.5;
+    if(bigBangActive || status==='stageclear' || status==='fullclear'){
+      ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.strokeStyle=g.color+'55'; ctx.lineWidth=g.isSuper?1.8:1.3; ctx.beginPath(); ctx.moveTo(g.x,g.y); ctx.lineTo(ring.x,ring.y); ctx.stroke(); ctx.restore();
+    }
+    const halo=ctx.createRadialGradient(g.x,g.y,0,g.x,g.y,g.isSuper?86:62); halo.addColorStop(0,'rgba(255,255,255,.10)'); halo.addColorStop(.35,g.color+'22'); halo.addColorStop(.8,g.color+'08'); halo.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(g.x,g.y,g.isSuper?86:62,0,TAU); ctx.fill();
+    ctx.save(); ctx.shadowColor=g.color; ctx.shadowBlur=g.isSuper?30:24; ctx.strokeStyle=g.color+'90'; ctx.lineWidth=g.isSuper?3.2:2.2; ctx.beginPath(); ctx.arc(g.x,g.y,orbit1+(g.isSuper?7:0),0,TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(g.x,g.y,orbit2,0,TAU); ctx.stroke();
+    const dots=g.isSuper?14:10;
+    for(let i=0;i<dots;i++){
+      const a=g.pulse*0.9+i*(TAU/dots)+g.seed*0.001, rr=orbit2+4+Math.sin(a*3)*2, px=g.x+Math.cos(a)*rr, py=g.y+Math.sin(a)*rr;
+      ctx.fillStyle=g.glow+'cc'; ctx.globalAlpha=.7; ctx.beginPath(); ctx.arc(px,py,(g.isSuper?1.8:1.3)+(i%3)*0.35,0,TAU); ctx.fill();
+    }
+    ctx.restore(); ctx.save(); ctx.fillStyle=g.color; ctx.globalAlpha=.95; ctx.beginPath(); ctx.arc(g.x,g.y,g.isSuper?8.8:5.8,0,TAU); ctx.fill(); ctx.restore();
+  }
+
+  function drawParticles(t){
+    const target=currentElement();
+    for(const p of particles){
+      const isCurrent=target && p.colorKey===target.key; const inRing=isCurrent && Math.hypot(p.x-ring.x,p.y-ring.y)<=ring.radius*SETTINGS.centerRadiusRatio;
+      const r=p.r*(1+Math.sin(t*0.006+p.phase)*0.04); const grad=ctx.createRadialGradient(p.x-r*.4,p.y-r*.4,0,p.x,p.y,r*1.8); grad.addColorStop(0,'rgba(255,255,255,.95)'); grad.addColorStop(.18,p.color); grad.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.save(); ctx.globalAlpha=isCurrent?1:.72; ctx.shadowColor=p.color; ctx.shadowBlur=18*(isCurrent?1.15:.55); ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,TAU); ctx.fill();
+      if(isCurrent){ ctx.globalAlpha=inRing?.22:.14; ctx.beginPath(); ctx.arc(p.x,p.y,r*1.9,0,TAU); ctx.fill(); }
+      ctx.restore();
+    }
+  }
+
+  function drawLinks(){
+    ctx.save(); ctx.lineWidth=1;
+    for(let i=0;i<particles.length;i++){
+      const a=particles[i];
+      for(let j=i+1;j<Math.min(i+8,particles.length);j++){
+        const b=particles[j]; const d=Math.hypot(a.x-b.x,a.y-b.y);
+        if(d<100){ ctx.globalAlpha=(1-d/100)*0.12; ctx.strokeStyle='rgba(110,231,255,0.26)'; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawEffects(dt){
+    for(let i=effects.length-1;i>=0;i--){ const e=effects[i]; e.life-=dt; if(e.life<=0){effects.splice(i,1);continue;} e.x += e.vx*dt; e.y += e.vy*dt; e.vx*=0.985; e.vy*=0.985; ctx.save(); ctx.globalAlpha=clamp(e.life*1.2,0,1); ctx.fillStyle=e.color; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,TAU); ctx.fill(); ctx.restore(); }
+  }
+
+  function drawBigBangCore(){
+    if(!bigBangActive && endingFlash<=0) return;
+    const t=bigBangTimer; const pulseSize=1+Math.sin(t*10)*0.06; const shockRadius=ring.radius*(0.96+t*.85+shock*.55)*pulseSize;
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const core=ctx.createRadialGradient(ring.x,ring.y,0,ring.x,ring.y,Math.max(w,h)*.55); core.addColorStop(0,'rgba(255,255,255,.96)'); core.addColorStop(.12,'rgba(255,230,190,.56)'); core.addColorStop(.24,'rgba(143,124,255,.28)'); core.addColorStop(.42,'rgba(110,231,255,.16)'); core.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=core; ctx.beginPath(); ctx.arc(ring.x,ring.y,Math.max(w,h)*.55,0,TAU); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.52)'; ctx.lineWidth=2; ctx.globalAlpha=.8; ctx.beginPath(); ctx.arc(ring.x,ring.y,shockRadius*.72,0,TAU); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.22)'; ctx.lineWidth=10; ctx.globalAlpha=.35; ctx.beginPath(); ctx.arc(ring.x,ring.y,shockRadius*.94,0,TAU); ctx.stroke(); ctx.restore();
+  }
+
+  function drawEndingFlash(){
+    if(endingFlash<=0) return;
+    ctx.save(); ctx.globalAlpha=endingFlash*.75; const flash=ctx.createRadialGradient(ring.x,ring.y,0,ring.x,ring.y,Math.max(w,h)*.85); flash.addColorStop(0,'rgba(255,255,255,.92)'); flash.addColorStop(.12,'rgba(160,200,255,.55)'); flash.addColorStop(.35,'rgba(143,124,255,.22)'); flash.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=flash; ctx.beginPath(); ctx.arc(ring.x,ring.y,Math.max(w,h)*.85,0,TAU); ctx.fill(); ctx.restore();
+  }
+
+  function render(dt,t){
+    ctx.save(); const shake=(bigBangActive?1.1:0) + pulse*.12; ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+    drawBackground(t); drawField(); drawLinks(); drawRing(t); galaxies.forEach(drawGalaxy); superGalaxies.forEach(drawGalaxy); drawBigBangCore(); drawParticles(t); drawEffects(dt); drawEndingFlash(); ctx.restore();
+  }
+
+  function tick(now){
+    const dt=clamp((now-lastFrame)/1000,0,.033); lastFrame=now;
+    if(status==='playing' && !paused){
+      stageElapsed += dt; totalRunTime += dt;
+      if(stageElapsed >= currentStage().timeLimit){ triggerGameOver(); }
+      else {
+        updateParticles(dt);
+        if(currentStage().type==='particleCharge') updateStage1(dt);
+        else if(phase==='particle') updateSuperStageParticle(dt);
+        else if(phase==='galaxy') updateSuperStageGalaxy(dt);
+        updateGalaxies(dt);
+        updateObjectiveList();
+      }
+    } else {
+      updateGalaxies(dt);
+    }
+    pulse=Math.max(0,pulse-dt*.65); audio.hum(pointerDown && status==='playing' && !paused && !bigBangActive); updateTexts(); render(dt,now); requestAnimationFrame(tick);
+  }
+
+  function pulseField(){ pointerX=ring.x; pointerY=ring.y; pulse=Math.min(SETTINGS.pulseMax,pulse+.85); burst(ring.x,ring.y,'#8f7cff',18,180); audio.unlock(); audio.pulse(); setToast('Pulse activated', 900); }
+  function getPointFromEvent(e){ const rect=canvas.getBoundingClientRect(); if(e.touches && e.touches.length) return {x:e.touches[0].clientX-rect.left,y:e.touches[0].clientY-rect.top}; return {x:e.clientX-rect.left,y:e.clientY-rect.top}; }
+
+  canvas.addEventListener('pointerdown',e=>{ audio.unlock(); if(status!=='playing') return; pointerDown=true; const p=getPointFromEvent(e); pointerX=p.x; pointerY=p.y; });
+  canvas.addEventListener('pointermove',e=>{ const p=getPointFromEvent(e); pointerX=p.x; pointerY=p.y; });
+  window.addEventListener('pointerup',()=>{ pointerDown=false; });
+  window.addEventListener('pointercancel',()=>{ pointerDown=false; });
+  els.holdBtn.addEventListener('mousedown',()=>{ audio.unlock(); if(status!=='playing') return; pointerDown=true; pointerX=ring.x; pointerY=ring.y; setToast('Gravity held', 700); });
+  els.holdBtn.addEventListener('mouseup',()=>{ pointerDown=false; });
+  els.holdBtn.addEventListener('mouseleave',()=>{ pointerDown=false; });
+  els.holdBtn.addEventListener('touchstart',e=>{ e.preventDefault(); audio.unlock(); if(status!=='playing') return; pointerDown=true; pointerX=ring.x; pointerY=ring.y; setToast('Gravity held', 700); }, {passive:false});
+  els.holdBtn.addEventListener('touchend',()=>{ pointerDown=false; });
+  els.pulseBtn.addEventListener('click',()=>{ if(status!=='playing') return; pulseField(); });
+  els.pauseBtn.addEventListener('click',()=>{ if(status!=='playing') return; paused=!paused; els.pauseBtn.textContent=paused?'Resume':'Pause'; els.statusText.textContent=paused?'Paused':'Playing'; if(paused) audio.hum(false); setToast(paused?'Paused':'Resumed', 800); });
+  els.restartBtn.addEventListener('click',()=>{ totalRunTime=0; startStage(); setToast('Run restarted'); });
+  els.soundBtn.addEventListener('click',()=>{ soundEnabled=!soundEnabled; if(!soundEnabled) audio.hum(false); updateTexts(); setToast(soundEnabled?'Sound enabled':'Sound muted', 900); });
+  els.nextBtn.addEventListener('click',()=>{
+    els.overlay.classList.remove('show');
+    if(overlayAction==='continue') currentStageIndex=Math.min(STAGES.length,currentStageIndex+1);
+    else if(overlayAction==='fullreset'){ currentStageIndex=1; unlockedStage=1; totalRunTime=0; }
+    startStage();
+  });
+  els.retryBtn.addEventListener('click',()=>{ els.overlay.classList.remove('show'); startStage(); });
+  els.closeBtn.addEventListener('click',()=>els.overlay.classList.remove('show'));
+  window.addEventListener('keydown',e=>{
+    if(e.key===' '){ e.preventDefault(); if(status==='playing') pulseField(); }
+    if(e.key.toLowerCase()==='p') els.pauseBtn.click();
+    if(e.key.toLowerCase()==='r') els.restartBtn.click();
+    if(e.key.toLowerCase()==='m') els.soundBtn.click();
+    if(e.key==='Escape') els.overlay.classList.remove('show');
+  });
+  window.addEventListener('resize',resize);
+
+  renderStageCards(); resize(); startStage(true); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
