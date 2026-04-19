@@ -1,5 +1,7 @@
 # Galaxy Core — Multi Stage Universe
 
+A cinematic multi-stage cosmic experience where particles become galaxies, galaxies become super galaxies, and everything ends in a powerful Big Bang.
+
 Galaxy Core is a single-file browser game built with HTML, CSS, and JavaScript.
 
 The game starts with particle collection and core charging, then evolves into galaxy creation, super-galaxy forging, and a final cosmic Big Bang / Supernova sequence across multiple stages.
@@ -19,7 +21,13 @@ The game starts with particle collection and core charging, then evolves into ga
 
 Open the live version here:
 
-[Play Galaxy Core](https://YOUR-USERNAME.github.io/galaxy-core-game/)
+[Play Galaxy Core](https://bhuvanbhuvi043.github.io/galaxy-core-game/)
+
+## Repository
+
+View source code:
+
+https://github.com/bhuvanbhuvi043/galaxy-core-game
 
 ## Controls
 
