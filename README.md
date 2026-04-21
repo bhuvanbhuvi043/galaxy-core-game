@@ -41,9 +41,9 @@ Open the live version here:
 
 ## Android APK
 
-Download the latest Android build here:
+Download the Android release here:
 
-[Download APK](https://github.com/bhuvanbhuvi043/galaxy-core-game/releases/latest)
+[Download APK](https://github.com/bhuvanbhuvi043/galaxy-core-game/releases/tag/v1.0.0)
 
 > Note: On Android, you may need to allow installation from unknown sources before installing the APK.
 
@@ -105,7 +105,7 @@ Open the live site in any modern browser:
 [Play Galaxy Core](https://bhuvanbhuvi043.github.io/galaxy-core-game/)
 
 ### Android
-1. Download the APK from the latest release
+1. Download the APK from the release page
 2. Transfer it to your Android device if needed
 3. Open the APK file
 4. Allow installation from unknown sources if Android asks
